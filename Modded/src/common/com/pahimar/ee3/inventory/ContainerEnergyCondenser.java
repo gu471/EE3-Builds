@@ -81,11 +81,11 @@ public class ContainerEnergyCondenser extends Container {
             ItemStack itemStack = slot.getStack();
             newItemStack = itemStack.copy();
 
-            if (slotIndex < CHEST_INVENTORY_ROWS * CHEST_INVENTORY_COLUMNS) {
-                if (!this.mergeItemStack(itemStack, CHEST_INVENTORY_ROWS * CHEST_INVENTORY_COLUMNS, inventorySlots.size(), false))
+            if (slotIndex < 1 + CHEST_INVENTORY_ROWS * CHEST_INVENTORY_COLUMNS) {
+                if (!this.mergeItemStack(itemStack, 1 + CHEST_INVENTORY_ROWS * CHEST_INVENTORY_COLUMNS, inventorySlots.size(), false))
                     return null;
             }
-            else if (!this.mergeItemStack(itemStack, 0, CHEST_INVENTORY_ROWS * CHEST_INVENTORY_COLUMNS, false))
+            else
                 return null;
 
             if (itemStack.stackSize == 0) {

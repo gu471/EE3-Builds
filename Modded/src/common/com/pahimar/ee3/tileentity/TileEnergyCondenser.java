@@ -199,19 +199,20 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
             }
         }
         
-        if (getStackInSlot(0) != null && EmcRegistry.hasEmcValue(getStackInSlot(0)))
+        if (getStackInSlot(0) != null && EmcRegistry.hasEmcValue(getStackInSlot(0)) && EmcRegistry.getEmcValue(getStackInSlot(0)).getValue() != 0F)
         {
             if (storedEMC < maxEMC)
             {
                 for (int i = 1; i < INVENTORY_SIZE; i++)
                 {
-                    if (getStackInSlot(i) != null && getStackInSlot(i).getItem() != getStackInSlot(0).getItem())
+                    if (getStackInSlot(i) != null && getStackInSlot(i).getItem() != getStackInSlot(0).getItem() )
                     {
                         ItemStack stack = getStackInSlot(i);
-                        if (EmcRegistry.hasEmcValue(stack))
+                        if (EmcRegistry.hasEmcValue(stack) && EmcRegistry.getEmcValue(stack).getValue() != 0F)
                         {
                             storedEMC += EmcRegistry.getEmcValue(stack).getValue();
-                            decrStackSize(i, 1);
+                            if (!this.worldObj.isRemote)
+                                decrStackSize(i, 1);
                             break;
                         }
                     }
@@ -222,7 +223,6 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
                 addItemsFromEMC();
             }
         }
-        
     }
     
     private void addItemsFromEMC()
@@ -232,8 +232,11 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
             ItemStack stack = getStackInSlot(i);
             if (stack != null && stack.getItem() == getStackInSlot(0).getItem() && stack.stackSize != stack.getMaxStackSize())
             {
-                getStackInSlot(i).stackSize++;
-                this.onInventoryChanged();
+                if (!this.worldObj.isRemote)
+                {
+                    getStackInSlot(i).stackSize++;
+                    this.onInventoryChanged();
+                }
                 storedEMC -= EmcRegistry.getEmcValue(getStackInSlot(0)).getValue();
                 return;
             }
@@ -243,10 +246,13 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
             ItemStack stack = getStackInSlot(i);
             if (stack == null)
             {
-                ItemStack newStack = getStackInSlot(0).copy();
-                newStack.stackSize = 1;
-                setInventorySlotContents(i, newStack);
-                this.onInventoryChanged();
+                if (!this.worldObj.isRemote)
+                {
+                    ItemStack newStack = getStackInSlot(0).copy();
+                    newStack.stackSize = 1;
+                    setInventorySlotContents(i, newStack);
+                    this.onInventoryChanged();
+                }
                 storedEMC -= EmcRegistry.getEmcValue(getStackInSlot(0)).getValue();
                 return;
             }
