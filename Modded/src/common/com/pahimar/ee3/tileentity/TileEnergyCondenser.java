@@ -35,10 +35,17 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
     private int ticksSinceSync;
     
     /** Total EMC stored */
-    private float storedEMC;
+    public float storedEMC;
     
     /** Max EMC storage */
-    private static final float maxEMC = 100000F;
+    public static final float maxEMC = 8192F;
+    
+    /** Update Interger */
+    private int updateTime = 0;
+    
+    /** Should update when updateTime == 0? */
+    private boolean shouldUpdate = false;
+    
 
     public static final int INVENTORY_SIZE = (13 * 4) + 1;
 
@@ -199,46 +206,61 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
             }
         }
         
-        if (getStackInSlot(0) != null && EmcRegistry.hasEmcValue(getStackInSlot(0)) && EmcRegistry.getEmcValue(getStackInSlot(0)).getValue() != 0F)
+        if (!this.worldObj.isRemote)
         {
-            if (storedEMC < maxEMC)
+            
+            if (getStackInSlot(0) != null && EmcRegistry.hasEmcValue(getStackInSlot(0)) && EmcRegistry.getEmcValue(getStackInSlot(0)).getValue() != 0F && EmcRegistry.getEmcValue(getStackInSlot(0)).getValue() <= maxEMC)
             {
-                for (int i = 1; i < INVENTORY_SIZE; i++)
+                if (storedEMC < EmcRegistry.getEmcValue(getStackInSlot(0)).getValue())
                 {
-                    if (getStackInSlot(i) != null && getStackInSlot(i).getItem() != getStackInSlot(0).getItem() )
+                    for (int i = 1; i < INVENTORY_SIZE; i++)
                     {
-                        ItemStack stack = getStackInSlot(i);
-                        if (EmcRegistry.hasEmcValue(stack) && EmcRegistry.getEmcValue(stack).getValue() != 0F)
+                        if (getStackInSlot(i) != null && getStackInSlot(i).getItem() != getStackInSlot(0).getItem() )
                         {
-                            storedEMC += EmcRegistry.getEmcValue(stack).getValue();
-                            if (!this.worldObj.isRemote)
+                            ItemStack stack = getStackInSlot(i);
+                            if (EmcRegistry.hasEmcValue(stack) && EmcRegistry.getEmcValue(stack).getValue() != 0F)
+                            {
+                                storedEMC += EmcRegistry.getEmcValue(stack).getValue();
                                 decrStackSize(i, 1);
-                            break;
+                                this.customName = Float.toString(storedEMC);
+                                shouldUpdate = true;
+                                break;
+                            }
                         }
                     }
                 }
+                if (storedEMC >= EmcRegistry.getEmcValue(getStackInSlot(0)).getValue())
+                {
+                    shouldUpdate = addItemsFromEMC();
+                }
             }
-            if (storedEMC >= EmcRegistry.getEmcValue(getStackInSlot(0)).getValue())
+            if (updateTime > 0)
             {
-                addItemsFromEMC();
+                updateTime--;
             }
+            if (shouldUpdate && updateTime == 0)
+                updateEMC();
         }
     }
     
-    private void addItemsFromEMC()
+    private void updateEMC()
+    {
+        this.worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        updateTime = 10;
+        shouldUpdate = false;
+    }
+    
+    private boolean addItemsFromEMC()
     {
         for (int i = 1; i < INVENTORY_SIZE; i++)
         {
             ItemStack stack = getStackInSlot(i);
             if (stack != null && stack.getItem() == getStackInSlot(0).getItem() && stack.stackSize != stack.getMaxStackSize())
             {
-                if (!this.worldObj.isRemote)
-                {
-                    getStackInSlot(i).stackSize++;
-                    this.onInventoryChanged();
-                }
                 storedEMC -= EmcRegistry.getEmcValue(getStackInSlot(0)).getValue();
-                return;
+                getStackInSlot(i).stackSize++;
+                this.customName = Float.toString(storedEMC);
+                return true;
             }
         }
         for (int i = 1; i < INVENTORY_SIZE; i++)
@@ -246,17 +268,15 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
             ItemStack stack = getStackInSlot(i);
             if (stack == null)
             {
-                if (!this.worldObj.isRemote)
-                {
-                    ItemStack newStack = getStackInSlot(0).copy();
-                    newStack.stackSize = 1;
-                    setInventorySlotContents(i, newStack);
-                    this.onInventoryChanged();
-                }
                 storedEMC -= EmcRegistry.getEmcValue(getStackInSlot(0)).getValue();
-                return;
+                ItemStack newStack = getStackInSlot(0).copy();
+                newStack.stackSize = 1;
+                setInventorySlotContents(i, newStack);
+                this.customName = Float.toString(storedEMC);
+                return true;
             }
         }
+        return false;
     }
     
     public float getStoredEMC()
@@ -279,6 +299,7 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
                 inventory[slotIndex] = ItemStack.loadItemStackFromNBT(tagCompound);
             }
         }
+        storedEMC = nbtTagCompound.getFloat("EMC");
     }
 
     @Override
@@ -297,7 +318,7 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
             }
         }
         nbtTagCompound.setTag("Items", tagList);
-
+        nbtTagCompound.setFloat("EMC", storedEMC);
     }
 
     @Override

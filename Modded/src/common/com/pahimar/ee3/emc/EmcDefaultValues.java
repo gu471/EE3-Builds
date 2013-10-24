@@ -1,9 +1,7 @@
 package com.pahimar.ee3.emc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
@@ -12,8 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 import com.pahimar.ee3.item.CustomWrappedStack;
-import com.pahimar.ee3.item.OreStack;
-import com.pahimar.ee3.item.crafting.RecipeRegistry;
 
 public class EmcDefaultValues {
 
@@ -50,7 +46,7 @@ public class EmcDefaultValues {
         valueMap.put(new CustomWrappedStack(Block.deadBush), new EmcValue(1, EmcComponent.CORPOREAL_UNIT_COMPONENT));
         valueMap.put(new CustomWrappedStack(Block.ice), new EmcValue(1, EmcComponent.CORPOREAL_UNIT_COMPONENT));
 
-        //valueMap.put(new CustomWrappedStack(Block.wood), new EmcValue(32, Arrays.asList(new EmcComponent(EmcType.CORPOREAL, 4), EmcComponent.ESSENTIA_UNIT_COMPONENT)));
+        //valueMap.put(new CustomWrappedStack(new OreStack(new ItemStack(Block.wood))), new EmcValue(32, Arrays.asList(new EmcComponent(EmcType.CORPOREAL, 4), EmcComponent.ESSENTIA_UNIT_COMPONENT)));
         //valueMap.put(new CustomWrappedStack(Block.oreIron), new EmcValue(256, EmcComponent.CORPOREAL_UNIT_COMPONENT));
         //valueMap.put(new CustomWrappedStack(Block.oreGold), new EmcValue(2048, EmcComponent.CORPOREAL_UNIT_COMPONENT));
         //valueMap.put(new CustomWrappedStack(Block.oreDiamond), new EmcValue(8192, EmcComponent.CORPOREAL_UNIT_COMPONENT));
@@ -95,75 +91,13 @@ public class EmcDefaultValues {
         {
             valueMap.put(new CustomWrappedStack(stack), new EmcValue(512, EmcComponent.CORPOREAL_UNIT_COMPONENT));
         }
+        
         for (int meta = 0; meta < 4; meta++)
         {
             valueMap.put(new CustomWrappedStack(new ItemStack(Block.wood.blockID, 1, meta)), new EmcValue(32, Arrays.asList(new EmcComponent(EmcType.CORPOREAL, 4), EmcComponent.ESSENTIA_UNIT_COMPONENT)));
         }
         
-        // TODO Multiple passes for value computation
-        for (int i = 0; i < 16; i++)
-        {
-            attemptValueAssignment();
-        }
-    }
-
-    private List<CustomWrappedStack> attemptValueAssignment() {
-
-        List<CustomWrappedStack> computedStacks = new ArrayList<CustomWrappedStack>();
-
-        for (CustomWrappedStack stack : RecipeRegistry.getDiscoveredStacks()) {
-            
-            if (!valueMap.containsKey(stack)) {
-                
-                for (CustomWrappedStack recipeOutput : RecipeRegistry.getRecipeMappings().keySet()) {
-                    
-                    if (stack.equals(new CustomWrappedStack(recipeOutput.getWrappedStack()))) {
-                        
-                        for (List<CustomWrappedStack> recipeInputs : RecipeRegistry.getRecipeMappings().get(recipeOutput)) {
-                                
-                            EmcValue computedValue = computeEmcValueFromList(recipeOutput.getStackSize(), recipeInputs);
-                            
-                            if (computedValue instanceof EmcValue) {
-                                valueMap.put(stack, computedValue);
-                                computedStacks.add(stack);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        return computedStacks;
-    }
-
-    private EmcValue computeEmcValueFromList(int recipeOutputSize, List<CustomWrappedStack> recipeInputs) {
-
-        float[] computedSubValues = new float[EmcType.TYPES.length];
-
-        for (CustomWrappedStack stack : recipeInputs) {
-
-            CustomWrappedStack unitStack = new CustomWrappedStack(stack.getWrappedStack());
-            EmcValue stackValue = valueMap.get(unitStack);
-            
-            if (stackValue == null && unitStack.getWrappedStack() instanceof ItemStack) {
-                if (OreDictionary.getOreID((ItemStack) unitStack.getWrappedStack()) != -1) {
-                    // TODO Detect if other stacks that are part of this OreStack have values, and nab them
-                    unitStack = new CustomWrappedStack(new OreStack(OreDictionary.getOreID((ItemStack) unitStack.getWrappedStack())));
-                    stackValue = valueMap.get(unitStack);
-                }
-            }
-
-            if (stackValue != null) {
-                for (EmcType emcType : EmcType.TYPES) {
-                    computedSubValues[emcType.ordinal()] += stackValue.components[emcType.ordinal()] * stack.getStackSize() / recipeOutputSize;
-                }
-            }
-            else {
-                return null;
-            }
-        }
-
-        return new EmcValue(computedSubValues);
+        EmcRegistry.attemptValueAssignment();
     }
 
     public static Map<CustomWrappedStack, EmcValue> getDefaultValueMap() {

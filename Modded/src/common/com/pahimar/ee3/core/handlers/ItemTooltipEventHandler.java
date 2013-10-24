@@ -38,7 +38,7 @@ public class ItemTooltipEventHandler {
             }
         }
         
-        if (EmcRegistry.hasEmcValue(stack)) {
+        if (EmcRegistry.hasEmcValue(stack) && EmcRegistry.getEmcValue(stack) != null) {
             EmcValue emcValue = EmcRegistry.getEmcValue(stack);
 
             event.toolTip.add("");

@@ -41,7 +41,8 @@ public class GuiEnergyCondenser extends GuiContainer {
 
         //fontRenderer.drawString(tileEnergyCondenser.isInvNameLocalized() ? tileEnergyCondenser.getInvName() : StatCollector.translateToLocal(tileEnergyCondenser.getInvName()), xSize/2, 10, 4210752);
         fontRenderer.drawString(StatCollector.translateToLocal(Strings.CONTAINER_INVENTORY), 44, ySize - 96 + 2, 4210752);
-        fontRenderer.drawString("Stored EMC: " + Float.toString(tileEnergyCondenser.getStoredEMC()) + " [Broken]", 28, 10, 4210752);
+        fontRenderer.drawString("0", 30, 11, 4210752);
+        fontRenderer.drawString(Float.toString(TileEnergyCondenser.maxEMC), 168, 11, 4210752);
     }
 
     @Override
@@ -54,5 +55,7 @@ public class GuiEnergyCondenser extends GuiContainer {
         int xStart = (width - xSize) / 2;
         int yStart = (height - ySize) / 2;
         this.drawTexturedModalRect(xStart, yStart, 0, 0, xSize, ySize);
+        this.drawTexturedModalRect(xStart + 40, yStart + 5, 0, 195, (int)(Float.parseFloat(tileEnergyCondenser.getCustomName())/TileEnergyCondenser.maxEMC*123), 18);
+        this.drawTexturedModalRect(xStart + 40, yStart + 5, 0, 213, 123, 20);
     }
 }
