@@ -192,31 +192,15 @@ public class EmcRegistry {
             Map<CustomWrappedStack, EmcValue> valueMap = new HashMap<CustomWrappedStack, EmcValue>();
             
             Iterator<CustomWrappedStack> i = uncomputedStacks.iterator();
-            while (i.hasNext())
-            {
+            while (i.hasNext()) {
+                
                 CustomWrappedStack stack = i.next();
-                for (List<CustomWrappedStack> recipeInputs : RecipeRegistry.getRecipeMappings().get(stack))
-                {
-                    float EMCvalue = 0F;
-                    boolean noValue = false;
-                    for (CustomWrappedStack inputStack : recipeInputs)
-                    {
-                        if (inputStack != null)
-                        {
-                            if (!EmcRegistry.hasEmcValue(inputStack))
-                            {
-                                noValue = true;
-                                break;
-                            }
-                            else
-                            {
-                                EMCvalue += EmcRegistry.getEmcValue(inputStack).getValue();
-                            }
-                        }
-                    }
-                    if (!noValue && EMCvalue != 0F)
-                    {
-                        valueMap.put(stack, new EmcValue(EMCvalue, EmcComponent.CORPOREAL_UNIT_COMPONENT));
+                for (List<CustomWrappedStack> recipeInputs : RecipeRegistry.getRecipeMappings().get(stack)) {
+                    
+                    EmcValue stackValue = computeEmcValueFromList(stack.getStackSize(), recipeInputs);
+                    if (stackValue != null) {
+                        
+                        valueMap.put(stack, stackValue);
                         
                         //Remove the CustomWrappedStack from the uncomputedStacks list, we found it, so we don't need to find it again!
                         i.remove();
@@ -228,6 +212,33 @@ public class EmcRegistry {
             emcRegistry.addToMap(valueMap);
         }
     }
+    
+        private static EmcValue computeEmcValueFromList(int recipeOutputSize, List<CustomWrappedStack> recipeInputs) {
+        
+                float[] computedSubValues = new float[EmcType.TYPES.length];
+        
+                for (CustomWrappedStack stack : recipeInputs) {
+        
+                    CustomWrappedStack unitStack = new CustomWrappedStack(stack.getWrappedStack());
+                    EmcValue stackValue = getEmcValue(unitStack);
+        
+                    if (stackValue != null) {
+                        for (EmcType emcType : EmcType.TYPES) {
+                            computedSubValues[emcType.ordinal()] += stackValue.components[emcType.ordinal()] * stack.getStackSize() / recipeOutputSize;
+                        }
+                    }
+                    else {
+                        return null;
+                    }
+                }
+                EmcValue stackValue = new EmcValue(computedSubValues);
+                if (stackValue.getValue() != 0F) {
+                    return new EmcValue(computedSubValues);
+                }
+                else {
+                    return null;
+                }
+             }
     
     private void addToMap(Map<CustomWrappedStack, EmcValue> map) {
 
