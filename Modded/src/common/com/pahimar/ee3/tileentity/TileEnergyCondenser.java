@@ -38,7 +38,7 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
     public float storedEMC;
     
     /** Max EMC storage */
-    public static final float maxEMC = 8192F;
+    public static final float maxEMC = 100000F;
     
     /** Update Interger */
     private int updateTime = 0;
@@ -59,6 +59,7 @@ public class TileEnergyCondenser extends TileEE implements IInventory {
 
         super();
         inventory = new ItemStack[INVENTORY_SIZE];
+        this.setCustomName(Float.toString(0.0F));
     }
 
     @Override

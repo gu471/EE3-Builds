@@ -38,16 +38,18 @@ public class ItemTooltipEventHandler {
             }
         }
         
-        if (EmcRegistry.hasEmcValue(stack) && EmcRegistry.getEmcValue(stack) != null) {
+        if (EmcRegistry.hasEmcValue(stack)) {
             EmcValue emcValue = EmcRegistry.getEmcValue(stack);
 
             event.toolTip.add("");
-            event.toolTip.add("EMC: " + emcValue.getValue());
-         
-            if (debug) {
-                for (EmcType emcType : EmcType.TYPES) {
-                    if (emcValue.components[emcType.ordinal()] > 0) {
-                        event.toolTip.add("  * " + emcType + ": " + emcValue.components[emcType.ordinal()]);
+            if (emcValue != null) {
+                event.toolTip.add("EMC: " + String.format("%.3f", stack.getStackSize() * emcValue.getValue()));
+             
+                if (debug) {
+                    for (EmcType emcType : EmcType.TYPES) {
+                        if (emcValue.components[emcType.ordinal()] > 0) {
+                            event.toolTip.add("  * " + emcType + ": " + String.format("%.3f", stack.getStackSize() * emcValue.components[emcType.ordinal()]));
+                        }
                     }
                 }
             }

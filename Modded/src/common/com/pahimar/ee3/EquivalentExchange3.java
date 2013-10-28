@@ -26,7 +26,7 @@ import com.pahimar.ee3.core.helper.LogHelper;
 import com.pahimar.ee3.core.helper.VersionHelper;
 import com.pahimar.ee3.core.proxy.CommonProxy;
 import com.pahimar.ee3.creativetab.CreativeTabEE3;
-import com.pahimar.ee3.emc.EmcDefaultValues;
+import com.pahimar.ee3.emc.EmcRegistry;
 import com.pahimar.ee3.item.ModItems;
 import com.pahimar.ee3.item.crafting.RecipesAlchemicalBagDyes;
 import com.pahimar.ee3.lib.InterModComms;
@@ -164,6 +164,7 @@ public class EquivalentExchange3 {
         // recipe registry works
         FMLInterModComms.sendMessage(Reference.MOD_ID, InterModComms.ADD_RECIPE, NBTHelper.encodeRecipeAsNBT(Item.bucketWater, Arrays.asList(Item.bucketEmpty, Block.waterStill)));
         FMLInterModComms.sendMessage(Reference.MOD_ID, InterModComms.ADD_RECIPE, NBTHelper.encodeRecipeAsNBT(Item.bucketLava, Arrays.asList(Item.bucketEmpty, Block.lavaStill)));
+        FMLInterModComms.sendMessage(Reference.MOD_ID, InterModComms.ADD_RECIPE, NBTHelper.encodeRecipeAsNBT(Block.pumpkinLantern, Arrays.asList(Block.pumpkin, Block.torchWood)));
     }
 
     @EventHandler
@@ -171,7 +172,10 @@ public class EquivalentExchange3 {
 
         // Initialize the Addon Handler
         AddonHandler.init();
-        EmcDefaultValues.getDefaultValueMap();
+        
+        EmcRegistry.lazyInit();
+        EmcRegistry.printUnmappedCompoundStacks();
+        EmcRegistry.printStackValueMappings();
     }
 
     @EventHandler
