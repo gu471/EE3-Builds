@@ -143,6 +143,7 @@ public class EmcDefaultValues {
         valueMap.put(new CustomWrappedStack(Item.egg), new EmcValue(32));
         valueMap.put(new CustomWrappedStack(Item.glowstone), new EmcValue(384));
         valueMap.put(new CustomWrappedStack(new ItemStack(Item.dyePowder, 1, 4)), new EmcValue(864));
+        valueMap.put(new CustomWrappedStack(Item.enderPearl), new EmcValue(1024));
         valueMap.put(new CustomWrappedStack(Item.blazeRod), new EmcValue(1536));
         valueMap.put(new CustomWrappedStack(Item.netherStalkSeeds), new EmcValue(24));
         valueMap.put(new CustomWrappedStack(Item.emerald), new EmcValue(8192));
